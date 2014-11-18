@@ -69,7 +69,7 @@ Example:
 					}
 					foreach (var excelRow in worksheet.Rows)
 					{
-						data.Add(new Raw()
+						data.Add(new Raw
 						{
 							Eng = excelRow.GetText(0),
 							Rus = excelRow.GetText(2),
@@ -94,17 +94,19 @@ Example:
 				{
 					raw.IsPhrase = raw.Rus.Contains("(фраза)");
 					raw.Rus = raw.Rus.Replace("(фраза)", "");
-					raw.RusTran = rxR.ReplaceAbr(raw.Rus);
-					raw.RusTran = raw.RusTran.Replace("(", " (").Replace(")", ") ").Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
-					raw.RusClear = rxR.RemoveBrackets(raw.RusTran).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
+					//
+					var rusprp = rxR.ReplaceAbr(raw.Rus).Replace("(", " (").Replace(")", ") ").Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
+					raw.RusTran = rusprp;
+					raw.RusClear = rxR.RemoveBrackets(rusprp).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
+					//
 					raw.EngClear = rxR.RemoveBrackets(raw.Eng).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
 					raw.RusEnd = (raw.RusClear.EndsWith("...")) ? " the phrase" :
 						(raw.RusClear.EndsWith("?")) ? " the question" :
 						(raw.RusClear.EndsWith(".") || raw.Rus.EndsWith("!")) ? " the sentence" : "";
-					raw.EngExampleNorm = raw.EngExample.ToLower().Replace("(", "").Replace(")", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace("’", "").Replace("'", "").Replace(" ", "");
-					raw.EngNorm = raw.Eng.ToLower().Replace("(", "").Replace(")", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace("’", "").Replace("'", "").Replace(" ", "");
-					raw.RusExampleNorm = raw.RusExample.ToLower().Replace("(", "").Replace(")", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace("’", "").Replace("'", "").Replace(" ", "");
-					raw.RusNorm = raw.Rus.ToLower().Replace("(", "").Replace(")", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace("’", "").Replace("'", "").Replace(" ", "");
+					raw.EngExampleNorm = rxR.Normilize(raw.EngExample);
+					raw.EngNorm = rxR.Normilize(raw.Eng);
+					raw.RusExampleNorm = rxR.Normilize(raw.RusExample);
+					raw.RusNorm = rxR.Normilize(raw.Rus);
 				}
 				#endregion parse data
 				#region write RuEn file
@@ -115,7 +117,7 @@ Example:
 						foreach (var raw in data)
 						{
 							#region russian
-							if (-1 == raw.Rus.IndexOf('('))
+							if (-1 == raw.RusTran.IndexOf('('))
 								writer.WriteLine(@"listen and translate{1}<silence msec=""400""/><lang langid=""419"">{0}</lang>"
 									, raw.RusTran, raw.RusEnd);
 							else
@@ -177,7 +179,7 @@ Example:
 								writer.WriteLine(@"<silence msec=""800""/>{0}<silence msec=""800""/>{1}", raw.Eng, raw.EngClear);
 							#endregion english
 							#region russian
-							if (-1 == raw.Rus.IndexOf('('))
+							if (-1 == raw.RusTran.IndexOf('('))
 								writer.WriteLine(@"<silence msec=""{1}""/><lang langid=""419"">{0}</lang>"
 									, raw.RusTran, minPause);
 							else
@@ -212,67 +214,62 @@ Example:
 		/*var rx = new Regex(@"\{(?>[^\{\}]+|\{(?<Br>)|\}(?<-Br>))*(?(Br)(?!))\}", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			var s = "aaa {dd} {ff} ddd {vv {{bb}} ff}";
 			s = rx.Replace(s, "");*/
-		readonly Regex _rx = new Regex(@"\(.*?\)", RegexOptions.Compiled);
+		readonly Regex _rx1 = new Regex(@"\(.*?\)", RegexOptions.Compiled);
+		readonly Regex _rx2 = new Regex(@"\[.*?\]", RegexOptions.Compiled);
+		#region _rxR
 		readonly Regex[] _rxR =
 		{
-			new Regex(@"\bразг\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bсравн.\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+			new Regex(@"\bсравн\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bв тч\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bв т.ч.\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bи тп\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bи т. п.\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bи пр\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bпр вр\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bпр\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bкакого-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bкому-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bкого-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
 			new Regex(@"\bчего-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bчему-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bгреч.\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bбот.\b", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-			new Regex(@"\bмн ч\b", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+			new Regex(@"\bчему-л\b", RegexOptions.IgnoreCase | RegexOptions.Compiled)
 		};
-		#region
 		readonly string[] _toR =
 		{
-			"разговорный",
 			"сравнительная степень",
 			"в том числе",
 			"в том числе",
 			"и тому подобное",
 			"и тому подобное",
 			"и прочее",
-			"прошедшее время",
-			"прошедшее время",
 			"какого-либо",
 			"кому-либо",
 			"кого-либо",
 			"чего-либо",
-			"чему-либо",
-			"из греческого",
-			"из ботаники",
-			"множественное число"
-};
-		#endregion
+			"чему-либо"
+		};
+		#endregion _rxR
 		public string ReplaceAbr(string input)
 		{
 			input = input
-				.Replace("(амер)", "(американский вариант)")
-				.Replace("(брит)", "(британский вариант)")
-				.Replace("(разг)", "(разговорный вариант)")
-				.Replace("(нем)", "(из немецкого)")
-				.Replace("(биол)", "(из биологии)")
-				.Replace("(юр)", "(из юридического)")
-				.Replace("(анат)", "(из анатомии)")
-				.Replace("(редко)", "(редко используется)");
-			for (int i = 0; i < _rxR.Length; i++)
+				.Replace("(разг)", "[разговорный вариант]")
+				.Replace("(амер)", "[американский вариант]")
+				.Replace("(брит)", "[британский вариант]")
+				.Replace("(нем)", "[из немецкого]")
+				.Replace("(пр вр)", "[прошедшее время]")
+				.Replace("(мн ч)", "[множественное число]")
+				.Replace("(биол)", "[из биологии]")
+				.Replace("(юр)", "[из юридического]")
+				.Replace("(анат)", "[из анатомии]")
+				.Replace("(редко)", "[редко используется]");
+			for (var i = 0; i < _rxR.Length; i++)
 				input = _rxR[i].Replace(input, _toR[i]);
 			return input;
 		}
 		public string RemoveBrackets(string input)
 		{
-			return _rx.Replace(input, "");
+			return _rx1.Replace(input, "");
+		}
+		public string Normilize(string input)
+		{
+			return _rx2.Replace(input, "").ToLower().Replace("(", "").Replace(")", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace("’", "").Replace("'", "").Replace(" ", "");
 		}
 	}
 
