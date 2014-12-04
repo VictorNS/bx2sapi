@@ -68,7 +68,7 @@ Example:
 				WriteEnRu(outFileEnRu, data, minPause, silentPause);
 				Console.WriteLine(outFileEnRu);
 
-				WriteSamples(outFileSamples, data, silentPause);
+				WriteSamples(outFileSamples, data, minPause, silentPause);
 				Console.WriteLine(outFileSamples);
 			}
 			catch (Exception ex)
@@ -194,7 +194,7 @@ Example:
 			}
 		}
 
-		private static void WriteSamples(string outFile, IEnumerable<Raw> data, int silentPause)
+		private static void WriteSamples(string outFile, IEnumerable<Raw> data, int minPause, int silentPause)
 		{
 			if (File.Exists(outFile))
 				File.Delete(outFile);
@@ -210,7 +210,8 @@ Example:
 						var raw = dataSample.FirstOrDefault();
 						writer.WriteLine(@"listen and translate");
 						writer.WriteLine(@"<silence msec=""400""/>{0}", raw.EngExample);
-						writer.WriteLine(@"<silence msec=""1500""/><lang langid=""419"">{0}</lang>", raw.RusExample);
+						writer.WriteLine(@"<silence msec=""{0}""/>", minPause);
+						writer.WriteLine(@"<lang langid=""419"">{0}</lang>", raw.RusExample);
 						writer.WriteLine(@"<silence msec=""{0}""/>", silentPause);
 						writer.WriteLine();
 					}
@@ -244,21 +245,20 @@ Example:
 
 						#region english
 
+						writer.WriteLine(@"<silence msec=""{0}""/>", minPause);
 						if (-1 == raw.Eng.IndexOf('('))
 						{
 							if (-1 == raw.Eng.Trim().IndexOf(' ') && -1 == raw.Eng.Trim().IndexOf('/'))
-								writer.WriteLine(@"<silence msec=""{1}""/>{0}<silence msec=""500""/>{0}", raw.Eng, minPause);
+								writer.WriteLine(@"{0}<silence msec=""500""/>{0}", raw.Eng);
 							else
-								writer.WriteLine(@"<silence msec=""{1}""/>{0}", raw.Eng, minPause);
+								writer.WriteLine(@"{0}", raw.Eng);
 						}
 						else
 						{
 							if (-1 == raw.EngClear.Trim().IndexOf(' '))
-								writer.WriteLine(@"<silence msec=""{2}""/>{0}<silence msec=""500""/>{0}<silence msec=""500""/>{1}"
-									, raw.EngClear, raw.Eng, minPause);
+								writer.WriteLine(@"{0}<silence msec=""500""/>{0}<silence msec=""500""/>{1}", raw.EngClear, raw.Eng);
 							else
-								writer.WriteLine(@"<silence msec=""{2}""/>{0}<silence msec=""500""/>{1}"
-									, raw.EngClear, raw.Eng, minPause);
+								writer.WriteLine(@"{0}<silence msec=""500""/>{1}", raw.EngClear, raw.Eng);
 						}
 
 						#endregion english
