@@ -20,8 +20,10 @@ namespace bx2sapi
   FileName
   /minpause
   /silentpause
+  /sentenceMode
 Example:
-  d:\bx2sapi\test.csv /minpause:4000 /silentpause:4500");
+  d:\bx2sapi\test.xlsx /minpause:4000 /silentpause:4500
+  d:\bx2sapi\pimsleur.xlsx /minpause:4000 /silentpause:4500 /sentenceMode");
 					return;
 				}
 				var inFile = args[0];
@@ -32,6 +34,7 @@ Example:
 				}
 				var minPause = 3000;
 				var silentPause = 3500;
+				var sentenceMode = false;
 				if (args.Length > 1) // /minpause:4000 /silentpause:4500
 				{
 					foreach (var arg in args)
@@ -50,6 +53,13 @@ Example:
 									silentPause = 3500;
 							}
 						}
+						else
+						{
+							if (arg == "/sentenceMode")
+							{
+								sentenceMode = true;
+							}
+						}
 					}
 				}
 				var outFile = Path.Combine(Path.GetDirectoryName(inFile), Path.GetFileNameWithoutExtension(inFile));
@@ -60,15 +70,15 @@ Example:
 
 				var data = ReadDataFromFile(inFile);
 
-				ParseData(data);
+				ParseData(data, sentenceMode);
 
-				WriteRuEn(outFileRuEn, data, minPause, silentPause);
+				WriteRuEn(outFileRuEn, data, minPause, silentPause, sentenceMode);
 				Console.WriteLine(outFileRuEn);
 
-				WriteEnRu(outFileEnRu, data, minPause, silentPause);
+				WriteEnRu(outFileEnRu, data, minPause, silentPause, sentenceMode);
 				Console.WriteLine(outFileEnRu);
 
-				WriteSamples(outFileSamples, data, minPause, silentPause);
+				WriteSamples(outFileSamples, data, minPause, silentPause, sentenceMode);
 				Console.WriteLine(outFileSamples);
 			}
 			catch (Exception ex)
@@ -78,7 +88,7 @@ Example:
 			}
 		}
 
-		private static void ParseData(IEnumerable<Raw> data)
+		private static void ParseData(IEnumerable<Raw> data, bool sentenceMode)
 		{
 			var rxR = new RegexpHelper();
 			foreach (var raw in data)
@@ -86,18 +96,29 @@ Example:
 				raw.IsPhrase = raw.Rus.Contains("(фраза)");
 				raw.Rus = raw.Rus.Replace("(фраза)", "");
 				//
-				var rusprp =
-					rxR.ReplaceAbr(raw.Rus)
-						.Replace("(", " (")
-						.Replace(")", ") ")
-						.Replace("  ", " ")
-						.Replace(" ,", ",")
-						.Replace(" .", ".")
-						.Trim();
-				raw.RusTran = rusprp;
-				raw.RusClear = rxR.RemoveBrackets(rusprp).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
+				if (sentenceMode)
+				{
+					raw.RusTran = raw.Rus;
+					raw.RusClear = raw.Rus;
+				}
+				else
+				{
+					var rusprp =
+						rxR.ReplaceAbr(raw.Rus)
+							.Replace("(", " (")
+							.Replace(")", ") ")
+							.Replace("  ", " ")
+							.Replace(" ,", ",")
+							.Replace(" .", ".")
+							.Trim();
+					raw.RusTran = rusprp;
+					raw.RusClear = rxR.RemoveBrackets(rusprp).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
+				}
+				if (sentenceMode)
+					raw.EngClear = raw.Eng;
+				else
+					raw.EngClear = rxR.RemoveBrackets(raw.Eng).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
 				//
-				raw.EngClear = rxR.RemoveBrackets(raw.Eng).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
 				raw.RusEnd = (raw.RusClear.EndsWith("..."))
 					? " the phrase"
 					: (raw.RusClear.EndsWith("?"))
@@ -107,6 +128,13 @@ Example:
 				raw.EngNorm = rxR.Normilize(raw.Eng);
 				raw.RusExampleNorm = rxR.Normilize(raw.RusExample);
 				raw.RusNorm = rxR.Normilize(raw.Rus);
+				if (sentenceMode)
+				{
+					raw.RusExample = "";
+					raw.RusExampleNorm = "";
+					raw.EngExample = "";
+					raw.EngExampleNorm = "";
+				}
 			}
 		}
 
@@ -146,7 +174,7 @@ Example:
 			return data;
 		}
 
-		private static void WriteEnRu(string outFile, IEnumerable<Raw> data, int minPause, int silentPause)
+		private static void WriteEnRu(string outFile, IEnumerable<Raw> data, int minPause, int silentPause, bool sentenceMode)
 		{
 			if (File.Exists(outFile))
 				File.Delete(outFile);
@@ -154,6 +182,7 @@ Example:
 			{
 				using (var writer = new StreamWriter(fs, System.Text.Encoding.GetEncoding(1251)))
 				{
+					writer.WriteLine(@"file {0}<silence msec=""400""/>", Path.GetFileNameWithoutExtension(outFile));
 					foreach (var raw in data)
 					{
 
@@ -163,32 +192,31 @@ Example:
 						if (isExample)
 							writer.WriteLine(@"listen<silence msec=""400""/>{0}", raw.EngExample);
 
-						if (-1 == raw.Eng.IndexOf('('))
+						if (-1 == raw.Eng.IndexOf('(') || sentenceMode)
 						{
 							if (isExample)
-								writer.WriteLine(@"translate<silence msec=""400""/>");
+								writer.WriteLine(@"<silence msec=""400""/>translate<silence msec=""400""/>{0}", raw.Eng);
 							else
-								writer.WriteLine(@"listen and translate<silence msec=""400""/>");
-							writer.WriteLine(@"{0}", raw.Eng);
+								writer.WriteLine(@"listen and translate<silence msec=""400""/>{0}", raw.Eng);
 						}
 						else
 						{
 							if (isExample)
-								writer.WriteLine(@"<silence msec=""400""/>{0}translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
+								writer.WriteLine(@"<silence msec=""400""/>{0}<silence msec=""400""/>translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
 							else
-								writer.WriteLine(@"listen<silence msec=""400""/>{0}translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
+								writer.WriteLine(@"listen<silence msec=""400""/>{0}<silence msec=""400""/>translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
 						}
 
 						#endregion english
 
 						#region russian
 
-						if (-1 == raw.RusTran.IndexOf('('))
+						if (-1 == raw.RusTran.IndexOf('(') || sentenceMode)
 							writer.WriteLine(@"<silence msec=""{1}""/><lang langid=""419"">{0}</lang>"
 								, raw.RusTran, minPause);
 						else
 							writer.WriteLine(
-								@"<silence msec=""{2}""/><lang langid=""419"">{0}</lang><silence msec=""800""/><lang langid=""419"">{1}</lang>"
+								@"<silence msec=""{2}""/><lang langid=""419"">{0}</lang><silence msec=""700""/><lang langid=""419"">{1}</lang>"
 								, raw.RusClear, raw.RusTran, minPause);
 
 						#endregion russian
@@ -205,10 +233,12 @@ Example:
 			}
 		}
 
-		private static void WriteSamples(string outFile, IEnumerable<Raw> data, int minPause, int silentPause)
+		private static void WriteSamples(string outFile, IEnumerable<Raw> data, int minPause, int silentPause, bool sentenceMode)
 		{
 			if (File.Exists(outFile))
 				File.Delete(outFile);
+			if (sentenceMode)
+				return;
 			var dataSamples = data.Where(it => !String.IsNullOrWhiteSpace(it.EngExample))
 				.Where(it => !String.IsNullOrWhiteSpace(it.RusExample))
 				.GroupBy(it => it.EngExample);
@@ -216,6 +246,7 @@ Example:
 			{
 				using (var writer = new StreamWriter(fs, System.Text.Encoding.GetEncoding(1251)))
 				{
+					writer.WriteLine(@"file {0}<silence msec=""400""/>", Path.GetFileNameWithoutExtension(outFile));
 					foreach (var dataSample in dataSamples)
 					{
 						var raw = dataSample.FirstOrDefault();
@@ -232,7 +263,7 @@ Example:
 			}
 		}
 
-		private static void WriteRuEn(string outFile, IEnumerable<Raw> data, int minPause, int silentPause)
+		private static void WriteRuEn(string outFile, IEnumerable<Raw> data, int minPause, int silentPause, bool sentenceMode)
 		{
 			if (File.Exists(outFile))
 				File.Delete(outFile);
@@ -240,16 +271,17 @@ Example:
 			{
 				using (var writer = new StreamWriter(fs, System.Text.Encoding.GetEncoding(1251)))
 				{
+					writer.WriteLine(@"file {0}<silence msec=""400""/>", Path.GetFileNameWithoutExtension(outFile));
 					foreach (var raw in data)
 					{
 						#region russian
 
-						if (-1 == raw.RusTran.IndexOf('('))
+						if (-1 == raw.RusTran.IndexOf('(') || sentenceMode)
 							writer.WriteLine(@"listen and translate{1}<silence msec=""400""/><lang langid=""419"">{0}</lang>"
 								, raw.RusTran, raw.RusEnd);
 						else
 							writer.WriteLine(
-								@"listen<silence msec=""400""/><lang langid=""419"">{0}</lang><silence msec=""400""/>translate{2}<lang langid=""419"">{1} {3}</lang>"
+								@"listen<silence msec=""400""/><lang langid=""419"">{0}</lang><silence msec=""400""/>translate{2}<silence msec=""400""/><lang langid=""419"">{1} {3}</lang>"
 								, raw.RusTran, raw.RusClear, raw.RusEnd, (raw.IsPhrase ? "(фраза)" : ""));
 
 						#endregion russian
@@ -257,16 +289,16 @@ Example:
 						#region english
 
 						writer.WriteLine(@"<silence msec=""{0}""/>", minPause);
-						if (-1 == raw.Eng.IndexOf('('))
+						if (-1 == raw.Eng.IndexOf('(') || sentenceMode)
 						{
 							if (-1 == raw.Eng.Trim().IndexOf(' ') && -1 == raw.Eng.Trim().IndexOf('/'))
-								writer.WriteLine(@"{0}<silence msec=""500""/>{0}", raw.Eng);
+								writer.WriteLine(@"{0}<silence msec=""400""/>{0}", raw.Eng);
 							else
 								writer.WriteLine(@"{0}", raw.Eng);
 						}
 						else
 						{
-							writer.WriteLine(@"{0}<silence msec=""500""/>{1}", raw.EngClear, raw.Eng);
+							writer.WriteLine(@"{0}<silence msec=""700""/>{1}", raw.EngClear, raw.Eng);
 						}
 
 						#endregion english
