@@ -254,6 +254,7 @@ Example:
 						writer.WriteLine(@"<silence msec=""400""/>{0}", raw.EngExample);
 						writer.WriteLine(@"<silence msec=""{0}""/>", minPause);
 						writer.WriteLine(@"<lang langid=""419"">{0}</lang>", raw.RusExample);
+						writer.WriteLine(@"<silence msec=""1500""/>{0}", raw.EngExample);
 						writer.WriteLine(@"<silence msec=""{0}""/>", silentPause);
 						writer.WriteLine();
 					}
