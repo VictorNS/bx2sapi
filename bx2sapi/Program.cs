@@ -17,13 +17,13 @@ namespace bx2sapi
 				if (args == null || args.Length == 0)
 				{
 					Console.WriteLine(@"Parameters:
-  FileName
-  /minpause
-  /silentpause
-  /sentenceMode
+	FileName
+	/minpause
+	/silentpause
+	/sentenceMode
 Example:
-  d:\bx2sapi\test.xlsx /minpause:4000 /silentpause:4500
-  d:\bx2sapi\pimsleur.xlsx /minpause:4000 /silentpause:4500 /sentenceMode");
+	d:\bx2sapi\test.xlsx /minpause:4000 /silentpause:4500
+	d:\bx2sapi\pimsleur.xlsx /minpause:4000 /silentpause:4500 /sentenceMode");
 					return;
 				}
 				var inFile = args[0];
@@ -119,7 +119,7 @@ Example:
 				else
 					raw.EngClear = rxR.RemoveBrackets(raw.Eng).Replace("  ", " ").Replace(" ,", ",").Replace(" .", ".").Trim();
 				//
-				raw.RusEnd = (raw.RusClear.EndsWith("..."))
+				raw.RusPhraseOrQuestion = (raw.RusClear.EndsWith("..."))
 					? " the phrase"
 					: (raw.RusClear.EndsWith("?"))
 						? " the question"
@@ -189,20 +189,22 @@ Example:
 						#region english
 
 						var isExample = !String.IsNullOrWhiteSpace(raw.EngExample) && raw.EngExampleNorm != raw.EngNorm;
-						if (isExample)
-							writer.WriteLine(@"listen<silence msec=""400""/>{0}", raw.EngExample);
 
-						if (-1 == raw.Eng.IndexOf('(') || sentenceMode)
+						if (sentenceMode)
+							writer.WriteLine(@"<silence msec=""1000""/>{0}", raw.Eng);
+						else if (-1 == raw.Eng.IndexOf('('))
 						{
 							if (isExample)
-								writer.WriteLine(@"<silence msec=""400""/>translate<silence msec=""400""/>{0}", raw.Eng);
+								writer.WriteLine(@"listen<silence msec=""400""/>{0}<silence msec=""400""/>translate<silence msec=""400""/>{1}"
+									, raw.EngExample, raw.Eng);
 							else
-								writer.WriteLine(@"listen and translate<silence msec=""400""/>{0}", raw.Eng);
+								writer.WriteLine(@"<silence msec=""400""/>{0}", raw.Eng);
 						}
 						else
 						{
 							if (isExample)
-								writer.WriteLine(@"<silence msec=""400""/>{0}<silence msec=""400""/>translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
+								writer.WriteLine(@"listen<silence msec=""400""/>{0}<silence msec=""400""/>{1}<silence msec=""400""/>translate<silence msec=""400""/>{2}"
+									, raw.EngExample, raw.Eng, raw.EngClear);
 							else
 								writer.WriteLine(@"listen<silence msec=""400""/>{0}<silence msec=""400""/>translate<silence msec=""400""/>{1}", raw.Eng, raw.EngClear);
 						}
@@ -250,8 +252,7 @@ Example:
 					foreach (var dataSample in dataSamples)
 					{
 						var raw = dataSample.FirstOrDefault();
-						writer.WriteLine(@"listen and translate");
-						writer.WriteLine(@"<silence msec=""400""/>{0}", raw.EngExample);
+						writer.WriteLine(raw.EngExample);
 						writer.WriteLine(@"<silence msec=""{0}""/>", minPause);
 						writer.WriteLine(@"<lang langid=""419"">{0}</lang>", raw.RusExample);
 						writer.WriteLine(@"<silence msec=""1500""/>{0}", raw.EngExample);
@@ -277,13 +278,15 @@ Example:
 					{
 						#region russian
 
-						if (-1 == raw.RusTran.IndexOf('(') || sentenceMode)
-							writer.WriteLine(@"listen and translate{1}<silence msec=""400""/><lang langid=""419"">{0}</lang>"
-								, raw.RusTran, raw.RusEnd);
+						if (sentenceMode)
+							writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0}</lang>", raw.RusTran);
+						else if (-1 == raw.RusTran.IndexOf('('))
+							writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0} {1}</lang>", raw.RusTran, (raw.IsPhrase ? "(фраза)" : ""));
+							/*writer.WriteLine(@"{0}<silence msec=""400""/><lang langid=""419"">{1}</lang>", raw.RusPhraseOrQuestion, raw.RusTran);*/
 						else
 							writer.WriteLine(
 								@"listen<silence msec=""400""/><lang langid=""419"">{0}</lang><silence msec=""400""/>translate{2}<silence msec=""400""/><lang langid=""419"">{1} {3}</lang>"
-								, raw.RusTran, raw.RusClear, raw.RusEnd, (raw.IsPhrase ? "(фраза)" : ""));
+								, raw.RusTran, raw.RusClear, raw.RusPhraseOrQuestion, (raw.IsPhrase ? "(фраза)" : ""));
 
 						#endregion russian
 
@@ -415,7 +418,7 @@ Example:
 
 		public string RusTran { get; set; }
 		public string RusClear { get; set; }
-		public string RusEnd { get; set; }
+		public string RusPhraseOrQuestion { get; set; }
 		public string EngClear { get; set; }
 
 		public string EngNorm { get; set; }
