@@ -41,8 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileParser.cs" />
+    <Compile Include="FileWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Raw.cs" />
+    <Compile Include="RegexpHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
