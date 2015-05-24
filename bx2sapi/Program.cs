@@ -230,7 +230,7 @@ Example:
 						writer.WriteLine();
 					}
 					writer.WriteLine(
-						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""5000""/>");
+						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""1000""/>");
 				}
 			}
 		}
@@ -260,7 +260,7 @@ Example:
 						writer.WriteLine();
 					}
 					writer.WriteLine(
-						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""5000""/>");
+						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""1000""/>");
 				}
 			}
 		}
@@ -325,7 +325,7 @@ Example:
 						writer.WriteLine();
 					}
 					writer.WriteLine(
-						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""5000""/>");
+						@"The lesson is over.<silence msec=""400""/>Come back and listen to me again!<silence msec=""1000""/>");
 				}
 			}
 		}
