@@ -113,14 +113,18 @@ namespace bx2sapi
 						#region russian
 
 						if (sentenceMode)
-							writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0}</lang>", raw.RusNorm);
+						{
+							if (raw.PhraseOrQuestion== SentenceType.Question)
+								writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{1}<silence msec=""300""/>{0}</lang>", raw.RusNorm, raw.RusPostfixPhraseOrQuestion);
+							else
+								writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0}</lang>", raw.RusNorm);
+						}
 						else if (-1 == raw.RusNorm.IndexOf('('))
-							writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0} {1}</lang>", raw.RusNorm, raw.AddRusPhrase);
-						/*writer.WriteLine(@"{0}<silence msec=""400""/><lang langid=""419"">{1}</lang>", raw.RusPhraseOrQuestion, raw.RusTran);*/
+							writer.WriteLine(@"<silence msec=""1000""/><lang langid=""419"">{0} {1}</lang>", raw.RusNorm, raw.RusPostfixPhrase);
 						else
 							writer.WriteLine(
 								@"listen<silence msec=""400""/><lang langid=""419"">{0}</lang><silence msec=""400""/>translate{2}<silence msec=""400""/><lang langid=""419"">{1} {3}</lang>"
-								, raw.RusNorm, raw.RusClear, raw.AddPhraseOrQuestion, raw.AddRusPhrase);
+								, raw.RusNorm, raw.RusClear, raw.EngPostfixPhraseOrQuestion, raw.RusPostfixPhrase);
 
 						#endregion russian
 

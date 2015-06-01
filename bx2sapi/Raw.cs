@@ -64,9 +64,35 @@ namespace bx2sapi
 		public string RusExampleComparable { get; set; }
 
 		/// <summary>
-		/// Окончание, может принимать значения: "", " the phrase", " the question", " the sentence"
+		/// фраза, вопрос, предложение
 		/// </summary>
-		public string AddPhraseOrQuestion { get; set; }
+		public SentenceType PhraseOrQuestion { get; set; }
+		/// <summary>
+		/// Готовое окончание предложения, может принимать значения: "", " the phrase", " the question", " the sentence"
+		/// </summary>
+		public string EngPostfixPhraseOrQuestion
+		{
+			get
+			{
+				return
+					PhraseOrQuestion == SentenceType.Sentence ? " the sentence" :
+					PhraseOrQuestion == SentenceType.Question ? " the question" :
+					PhraseOrQuestion == SentenceType.Phrase ? " the phrase" : "";
+			}
+		}
+		/// <summary>
+		/// Готовое окончание предложения, может принимать значения: "", " фраза", " вопрос", " предложение"
+		/// </summary>
+		public string RusPostfixPhraseOrQuestion
+		{
+			get
+			{
+				return
+					PhraseOrQuestion == SentenceType.Sentence ? " предложение" :
+					PhraseOrQuestion == SentenceType.Question ? " вопрос" :
+					PhraseOrQuestion == SentenceType.Phrase ? " фраза" : "";
+			}
+		}
 
 		/// <summary>
 		/// При парсинге обнаружено (фраза)
@@ -75,9 +101,17 @@ namespace bx2sapi
 		/// <summary>
 		/// this.IsPhrase ? "(фраза)" : ""
 		/// </summary>
-		public string AddRusPhrase
+		public string RusPostfixPhrase
 		{
 			get { return this.IsPhrase ? "(фраза)" : ""; }
 		}
+	}
+
+	public enum SentenceType
+	{
+		None = 0,
+		Phrase = 1,
+		Question = 2,
+		Sentence = 3
 	}
 }

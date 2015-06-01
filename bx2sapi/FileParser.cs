@@ -68,11 +68,10 @@ namespace bx2sapi
 					raw.RusClear = rxR.RemoveTextInBrackets(rusprp).RemoveSpaces();
 				}
 
-				raw.AddPhraseOrQuestion = (raw.RusClear.EndsWith("..."))
-					? " the phrase"
-					: (raw.RusClear.EndsWith("?"))
-						? " the question"
-						: (raw.RusClear.EndsWith(".") || raw.Rus.EndsWith("!")) ? " the sentence" : "";
+				raw.PhraseOrQuestion =
+					raw.RusClear.EndsWith("...") ? SentenceType.Phrase :
+						raw.RusClear.EndsWith("?") ? SentenceType.Question :
+							raw.RusClear.EndsWith(".") || raw.Rus.EndsWith("!") ? SentenceType.Sentence : SentenceType.None;
 				raw.EngExampleComparable = rxR.RemoveBrackets(raw.EngExample);
 				raw.EngComparable = rxR.RemoveBrackets(raw.Eng);
 				raw.RusExampleComparable = rxR.RemoveBrackets(raw.RusExample);
