@@ -59,8 +59,8 @@ Example:
 					}
 				}
 				var outFile = Path.Combine(Path.GetDirectoryName(inFile), Path.GetFileNameWithoutExtension(inFile));
-				var outFileRuEn = Path.ChangeExtension(outFile + " RuEn", "txt");
-				var outFileEnRu = Path.ChangeExtension(outFile + " EnRu", "txt");
+				var outFileRuEn = Path.ChangeExtension(outFile + " Ru En", "txt");
+				var outFileEnRu = Path.ChangeExtension(outFile + " En Ru", "txt");
 				var outFileSamples = Path.ChangeExtension(outFile + " Samples", "txt");
 				#endregion verify parameters
 
