@@ -59,9 +59,9 @@ Example:
 					}
 				}
 				var outFile = Path.Combine(Path.GetDirectoryName(inFile), Path.GetFileNameWithoutExtension(inFile));
-				var outFileRuEn = Path.ChangeExtension(outFile + " Ru En", "txt");
-				var outFileEnRu = Path.ChangeExtension(outFile + " En Ru", "txt");
-				var outFileSamples = Path.ChangeExtension(outFile + " Samples", "txt");
+				var outFileRuEn = outFile + ".Russian.English.txt";
+				var outFileEnRu = outFile + ".English.Russian.txt";
+				var outFileSamples = outFile + ".Samples.txt";
 				#endregion verify parameters
 
 				var data = FileParser.ReadDataFromFile(inFile);
