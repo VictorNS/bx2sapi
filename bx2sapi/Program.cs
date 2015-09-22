@@ -59,9 +59,9 @@ Example:
 					}
 				}
 				var outFile = Path.Combine(Path.GetDirectoryName(inFile), Path.GetFileNameWithoutExtension(inFile));
-				var outFileRuEn = outFile + ".Russian.English.txt";
-				var outFileEnRu = outFile + ".English.Russian.txt";
-				var outFileSamples = outFile + ".Samples.txt";
+				var outFileRuEn = outFile + " Russian English.txt";
+				var outFileEnRu = outFile + " English Russian.txt";
+				var outFileSamples = outFile + " Samples.txt";
 				#endregion verify parameters
 
 				var data = FileParser.ReadDataFromFile(inFile);
