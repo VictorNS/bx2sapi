@@ -83,6 +83,12 @@ namespace bx2sapi
 					raw.EngExample = "";
 					raw.EngExampleComparable = "";
 				}
+				if (string.IsNullOrWhiteSpace(raw.EngClear) || string.IsNullOrWhiteSpace(raw.RusClear))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine("Can't parse row {0} :: {1}", raw.Eng, raw.Rus);
+					Console.ForegroundColor = ConsoleColor.White;
+				}
 			}
 		}
 
