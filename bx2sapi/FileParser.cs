@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Excel;
 
 namespace bx2sapi
@@ -46,6 +47,7 @@ namespace bx2sapi
 
 		public static void ParseData(IEnumerable<Raw> data, bool sentenceMode)
 		{
+			var sb = new StringBuilder();
 			var rxR = new RegexpHelper();
 			foreach (var raw in data)
 			{
@@ -85,10 +87,12 @@ namespace bx2sapi
 				}
 				if (string.IsNullOrWhiteSpace(raw.EngClear) || string.IsNullOrWhiteSpace(raw.RusClear))
 				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine("Can't parse row {0} :: {1}", raw.Eng, raw.Rus);
-					Console.ForegroundColor = ConsoleColor.White;
+					sb.AppendLine($"Can't parse row with columns [0]='{raw.Eng}' [2]='{raw.Rus}'");
 				}
+			}
+			if (sb.Length != 0)
+			{
+				throw new InvalidDataException(sb.ToString());
 			}
 		}
 

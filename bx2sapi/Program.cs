@@ -65,7 +65,16 @@ Example:
 				#endregion verify parameters
 
 				var data = FileParser.ReadDataFromFile(inFile);
-				FileParser.ParseData(data, sentenceMode);
+				try
+				{
+					FileParser.ParseData(data, sentenceMode);
+				}
+				catch (Exception ex)
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine(ex.Message);
+					Console.ForegroundColor = ConsoleColor.White;
+				}
 
 				FileWriter.WriteRuEn(outFileRuEn, data, minPause, silentPause, sentenceMode);
 				Console.WriteLine(outFileRuEn);

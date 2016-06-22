@@ -5,6 +5,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -16,19 +17,25 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
 # ReSharper is a .NET coding add-in
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+
 # NuGet Packages
 *.nupkg
+packages/
+
 # Others
 ClientBin/
 *.dbmdl
 *.dbproj.schemaview
+
 # SQL Server files
 *.mdf
 *.ldf
