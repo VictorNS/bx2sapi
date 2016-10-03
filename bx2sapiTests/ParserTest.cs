@@ -199,6 +199,68 @@ namespace bx2sapiTests
 			});
 		}
 
+		[TestMethod]
+		public void RusEqualExampleBracesComment()
+		{
+			var actual = new List<Raw>
+			{
+				new Raw { Rus = "Текст - Текзт(комент)", Eng = "Text", RusExample = "Текст - Текзт. (комент)", EngExample = ""}
+			};
+
+			FileParser.ParseData(actual, false);
+
+			actual.ShouldAllBeEquivalentTo(new List<Raw>
+			{
+				new Raw
+				{
+					IsPhrase = false,
+					Rus = "Текст - Текзт(комент)",
+					RusNorm = "Текст - Текзт (комент)",
+					RusClear = "Текст - Текзт",
+					RusComparable = "текст-текзткомент",
+					RusExample = "Текст - Текзт. (комент)",
+					RusExampleComparable = "текст-текзткомент",
+					Eng = "Text",
+					EngClear = "Text",
+					EngComparable = "text",
+					EngExample = "",
+					EngExampleComparable = "",
+					PhraseOrQuestion = SentenceType.None
+				}
+			});
+		}
+
+		[TestMethod]
+		public void RusEqualExampleBracketsRemark()
+		{
+			var actual = new List<Raw>
+			{
+				new Raw { Rus = "Текст - Текзт[комент]", Eng = "Text", RusExample = "Текст - Текзт.", EngExample = ""}
+			};
+
+			FileParser.ParseData(actual, false);
+
+			actual.ShouldAllBeEquivalentTo(new List<Raw>
+			{
+				new Raw
+				{
+					IsPhrase = false,
+					Rus = "Текст - Текзт[комент]",
+					RusNorm = "Текст - Текзт[комент]",
+					RusClear = "Текст - Текзт[комент]",
+					RusComparable = "текст-текзт",
+					RusExample = "Текст - Текзт.",
+					RusExampleComparable = "текст-текзт",
+					Eng = "Text",
+					EngClear = "Text",
+					EngComparable = "text",
+					EngExample = "",
+					EngExampleComparable = "",
+					PhraseOrQuestion = SentenceType.None
+				}
+			});
+		}
+
 		#endregion Rus
 
 		#region Eng
@@ -265,7 +327,7 @@ namespace bx2sapiTests
 
 		#endregion Eng
 
-		#region RegexpHelper
+		#region RegexpHelper - Curves
 
 		[TestMethod]
 		public void RegexpHelperInformal()
@@ -597,7 +659,113 @@ namespace bx2sapiTests
 			});
 		}
 
-		#endregion RegexpHelper
+		#endregion RegexpHelper - Curves
 
+		#region RegexpHelper - Regex
+
+		[TestMethod]
+		public void RegexpHelperComparative()
+		{
+			var actual = new List<Raw>
+			{
+				new Raw { Rus = "Текст сравн текст", Eng = "Text", RusExample = "", EngExample = ""}
+			};
+
+			FileParser.ParseData(actual, false);
+
+			actual.ShouldAllBeEquivalentTo(new List<Raw>
+			{
+				new Raw
+				{
+					IsPhrase = false,
+					Rus = "Текст сравн текст",
+					RusNorm = "Текст сравнительная степень текст",
+					RusClear = "Текст сравнительная степень текст",
+					RusComparable = "текстсравнтекст",
+					RusExample = "",
+					RusExampleComparable = "",
+					Eng = "Text",
+					EngClear = "Text",
+					EngComparable = "text",
+					EngExample = "",
+					EngExampleComparable = ""
+				}
+			});
+		}
+
+		#endregion RegexpHelper - Regex
+
+		#region Complex
+		[TestMethod]
+		public void ComplexMoreThanOneCurves()
+		{
+			var actual = new List<Raw>
+			{
+				new Raw
+				{
+					Rus = "ступня( - сенсорный орган)",
+					Eng = "(the)sole(is a sensory organ)",
+					RusExample = "Ступня - сенсорный орган.",
+					EngExample = "The sole is a sensory organ."
+				}
+			};
+
+			FileParser.ParseData(actual, false);
+
+			actual.ShouldAllBeEquivalentTo(new List<Raw>
+			{
+				new Raw
+				{
+					IsPhrase = false,
+					Rus = "ступня( - сенсорный орган)",
+					RusNorm = "ступня ( - сенсорный орган)",
+					RusClear = "ступня",
+					RusComparable = "ступня-сенсорныйорган",
+					RusExample = "Ступня - сенсорный орган.",
+					RusExampleComparable = "ступня-сенсорныйорган",
+					Eng = "(the)sole(is a sensory organ)",
+					EngClear = "sole",
+					EngComparable = "thesoleisasensoryorgan",
+					EngExample = "The sole is a sensory organ.",
+					EngExampleComparable = "thesoleisasensoryorgan"
+				}
+			});
+		}
+		[TestMethod]
+		public void ComplexSquareBrackets()
+		{
+			var actual = new List<Raw>
+			{
+				new Raw
+				{
+					Rus = "Пара фраз.[комент]",
+					Eng = "A couple of phrases.[comment]",
+					RusExample = "Пара фраз.[комент]",
+					EngExample = "A couple of phrases.[comment]"
+				}
+			};
+
+			FileParser.ParseData(actual, false);
+
+			actual.ShouldAllBeEquivalentTo(new List<Raw>
+			{
+				new Raw
+				{
+					IsPhrase = false,
+					Rus = "Пара фраз.[комент]",
+					RusNorm = "Пара фраз.[комент]",
+					RusClear = "Пара фраз.[комент]",
+					RusComparable = "парафраз",
+					RusExample = "Пара фраз.[комент]",
+					RusExampleComparable = "парафраз",
+					Eng = "A couple of phrases.[comment]",
+					EngClear = "A couple of phrases.[comment]",
+					EngComparable = "acoupleofphrases",
+					EngExample = "A couple of phrases.[comment]",
+					EngExampleComparable = "acoupleofphrases"
+				}
+			});
+		}
+		#endregion Complex
 	}
 }
