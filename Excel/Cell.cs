@@ -5,14 +5,13 @@ using System.Xml.Serialization;
 
 namespace Excel
 {
-    /// <summary>
-    /// (c) 2014 Vienna, Dietmar Schoder
-    /// 
-    /// Code Project Open License (CPOL) 1.02
-    /// 
-    /// Deals with an Excel cell
-    /// </summary>
-    public class Cell
+	/// <summary>
+	/// (c) 2014 Vienna, Dietmar Schoder
+	/// https://www.codeproject.com/Tips/801032/Csharp-How-To-Read-xlsx-Excel-File-With-Lines-of
+	/// Code Project Open License (CPOL) 1.02
+	/// Deals with an Excel cell
+	/// </summary>
+	public class Cell
     {
         /// <summary>
         /// Used for converting from Excel column/row to column index starting at 0

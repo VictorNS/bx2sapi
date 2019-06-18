@@ -4,9 +4,8 @@ namespace Excel
 {
 	/// <summary>
 	/// (c) 2014 Vienna, Dietmar Schoder
-	/// 
+	/// https://www.codeproject.com/Tips/801032/Csharp-How-To-Read-xlsx-Excel-File-With-Lines-of
 	/// Code Project Open License (CPOL) 1.02
-	/// 
 	/// Deals with an Excel row
 	/// </summary>
 	public class Row
