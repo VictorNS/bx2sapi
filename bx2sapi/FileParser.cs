@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -51,8 +51,8 @@ namespace bx2sapi
 			var rxR = new RegexpHelper();
 			foreach (var raw in data)
 			{
-				raw.IsPhrase = raw.Rus.Contains("(ôðàçà)");
-				raw.Rus = raw.Rus.Replace("(ôðàçà)", "");
+				raw.IsPhrase = raw.Rus.Contains("(Ñ„Ñ€Ð°Ð·Ð°)");
+				raw.Rus = raw.Rus.Replace("(Ñ„Ñ€Ð°Ð·Ð°)", "");
 
 				if (sentenceMode)
 				{
